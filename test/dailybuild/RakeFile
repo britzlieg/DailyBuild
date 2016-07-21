@@ -1,0 +1,34 @@
+task :default => [:CI]             # 默认的任务，rake即可调用
+
+desc "自动打包"
+task :CI do
+  Rake::Task["xcodebuild:ReleasePgyer"].invoke      # 在一个任务中调用另外的任务
+end
+
+namespace :xcodebuild do                    # 加入命名空间，xcodebuild
+
+desc "任务-移除build目录"
+task :RemoveBuildDir do
+  puts "Remove Build Dir"
+  sh "rm -r -f ../build"
+end
+
+desc "任务-归档"
+task :ArchiveAPP => :RemoveBuildDir do
+  puts "Archive APP"
+  sh "xcodebuild -workspace ../test.xcworkspace -sdk iphoneos -scheme testScheme -archivePath ../build/testArchieve.xcarchive -configuration Debug archive"
+end
+
+desc "任务-导出IPA包"
+task :ExportIPA => :ArchiveAPP do  # 加入依赖关系，ExportIPA依赖ArchiveAPP先执行
+  puts "Export IPA"
+  sh "xcodebuild  -exportArchive -exportFormat IPA -archivePath ../build/testArchieve.xcarchive -exportPath ../build/test.ipa -exportProvisioningProfile \"iOS Team Provisioning Profile: *\""
+end
+
+desc "任务-发布蒲公英" 
+task :ReleasePgyer => :ExportIPA do
+    puts "Release IPA"
+    sh "curl -F \"file=@../build/test.ipa\" -F \"uKey=AAAAA\" -F \"_api_key=B\" BBBBhttp://www.pgyer.com/apiv1/app/upload"
+end
+
+end

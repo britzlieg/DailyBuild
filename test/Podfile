@@ -1,0 +1,10 @@
+platform :ios, '7.0'
+
+pod 'pop', '~> 1.0.8'
+
+target 'test' do
+
+end
+
+
+#注意编辑该文件时，请勿使用【文本编辑】
